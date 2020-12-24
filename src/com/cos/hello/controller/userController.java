@@ -18,6 +18,8 @@ import com.cos.hello.config.DBConn;
 import com.cos.hello.dao.UsersDao;
 import com.cos.hello.model.Users;
 
+import com.cos.hello.service.UsersService;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -52,88 +54,64 @@ public class userController extends HttpServlet{
 	}
 	
 	private void route(String gubun,HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+		UsersService usersService = new UsersService();
+		
 		if (gubun.equals("login")) {	//한번 더 request
 			resp.sendRedirect("auth/login.jsp");
+			
 		}else if (gubun.equals("join")) {
 			resp.sendRedirect("auth/join.jsp");
+			
 		}else if (gubun.equals("selectOne")) {
-			//인증이 필요한 페이지
-			String result;
-			HttpSession session = req.getSession();
-			if (session.getAttribute("sessionUser") != null) {
-				Users user = (Users)session.getAttribute("sessionUser");
-				result="인증되었습니다.";
-				System.out.println(user);
-			}else {
-				result="인증되지않았습니다.";
-			}
-			//resp.sendRedirect("user/selectOne.jsp");
-			//request를 두번해서 기존것이 날라가는데 request를 유지하는기법 밑에임
-			req.setAttribute("result", result);
-			RequestDispatcher dis =
-					req.getRequestDispatcher("user/selectOne.jsp");
-			dis.forward(req,resp); //덮어쓰기 
+			usersService.유저정보보기(req, resp);
 			
 		}else if (gubun.equals("updateOne")) {
-			resp.sendRedirect("user/updateOne.jsp");
+			usersService.유저정보수정페이지(req,resp);
+			
 		}else if(gubun.equals("joinProc")) {
-			//데이터 원형 username=ssar&password=1234&email=ssar@nate.com
+			usersService.회원가입(req, resp);
 			
-			//1번 form의 input태그에 있는 3가지 값 username, password, email 받기
-			String username = req.getParameter("username"); //key값이 name값
-			String password = req.getParameter("password"); //key값 뒤에 = 값을 골라주는 함수
-			String email = req.getParameter("email");		//파싱을 해준다
+		}else if(gubun.equals("updateProc")) {
+			usersService.유저정보수정하기(req, resp);
 			
-			Users user = Users.builder()
-					.username(username)
-					.password(password)
-					.email(email)
-					.build();
-			
-			UsersDao userDao = new UsersDao();	//싱글톤으로 바꿔보기
-			int result = userDao.insert(user);
-			if(result==1) {
-				//3번 insert가 정상적으로 되었다면 index.jsp를 응답!!
-				resp.sendRedirect("auth/login.jsp");
-			}else {
-				resp.sendRedirect("auth/join.jsp");
-			}
-			
-			System.out.println("======joinProc=======");
-			System.out.println(username);
-			System.out.println(password);
-			System.out.println(email);
-			System.out.println("======joinProc=======");
-			
-			
-			
-			
-			
+		}else if(gubun.equals("deleteProc")) {
+			usersService.회원삭제(req, resp);
+		
 		}else if (gubun.equals("loginProc")) {
-			//1번 전달되는 값 받기
-			String username = req.getParameter("username");
-			String password = req.getParameter("password");
 			
-			System.out.println("======loginProc=======");
-			System.out.println(username);
-			System.out.println(password);
-			System.out.println("======loginProc=======");
-			//2번 데이터베이스 값이 있는 select해서 확인
-			Users user = Users.builder()
-					.id(1)
-					.username(username)
-					.build();
-			//3번 
-			HttpSession session = req.getSession();//세션 영역에 접근 힙메모리에
-			//session에는 사용자 패스워드 절대 넣지 않기
-			session.setAttribute("sessionUser",user);
-			//모든 응답에는 jSessionid가 쿠키로 추가된다.
+			//1. 쿼리문 select id, username, email FROM users WHERE username = ? AND password = ?
+			//2. dao의 함수명 : login() return을 Users 오브젝트를 리턴
+			//정상이면 : 세션에 Users오브젝트 담고 index.jsp 
+			//비정상이면 : login.jsp
 			
-			//resp.setHeader("cos", "session=9998"); //key값이 다른거면 브라우저엔 저장이 안됨
-			//resp.setHeader("Set-cookie", "session=9998");// key값이 Set-cookie이면 브라우저에 저장됨
+		
+			usersService.로그인(req, resp);
 			
-			//4번 정보가 있으면 index.jsp로 이동 
-			resp.sendRedirect("index.jsp");
+			
+//			//1번 전달되는 값 받기
+//			String username = req.getParameter("username");
+//			String password = req.getParameter("password");
+//			
+//			System.out.println("======loginProc=======");
+//			System.out.println(username);
+//			System.out.println(password);
+//			System.out.println("======loginProc=======");
+//			//2번 데이터베이스 값이 있는 select해서 확인
+//			Users user = Users.builder()
+//					.id(1)
+//					.username(username)
+//					.build();
+//			//3번 
+//			HttpSession session = req.getSession();//세션 영역에 접근 힙메모리에
+//			//session에는 사용자 패스워드 절대 넣지 않기
+//			session.setAttribute("sessionUser",user);
+//			//모든 응답에는 jSessionid가 쿠키로 추가된다.
+//			
+//			//resp.setHeader("cos", "session=9998"); //key값이 다른거면 브라우저엔 저장이 안됨
+//			//resp.setHeader("Set-cookie", "session=9998");// key값이 Set-cookie이면 브라우저에 저장됨
+//			
+//			//4번 정보가 있으면 index.jsp로 이동 
+//			resp.sendRedirect("index.jsp");
 			
 			
 		}
