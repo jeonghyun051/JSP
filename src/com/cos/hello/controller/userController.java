@@ -39,6 +39,7 @@ public class userController extends HttpServlet{
 		doProcess(req,resp);
 	}
 	protected void doProcess(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	
 		System.out.println("user process 요청");
 		
 		//req와 res는 톰켓이 만들어 줍니다.(사용자의 요청이 있을때 마다)
@@ -54,6 +55,8 @@ public class userController extends HttpServlet{
 	}
 	
 	private void route(String gubun,HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+		
+		
 		UsersService usersService = new UsersService();
 		
 		if (gubun.equals("login")) {	//한번 더 request

@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import com.cos.hello.config.DBConn;
+import com.cos.hello.dto.JoinDto;
+import com.cos.hello.dto.LoginDto;
 import com.cos.hello.model.Users;
 
 public class UsersDao {
@@ -40,7 +42,7 @@ public class UsersDao {
 	}
 
 	//dao에서는 단순하게 하나만 실행하는 함수를 만드는것
-	public int insert(Users user) {	//String username, String password, String email 다쓰지말고 빈즈해놓고 한번에
+	public int insert(JoinDto joinDto) {	//String username, String password, String email 다쓰지말고 빈즈해놓고 한번에
 		//2번 DB에 연결해서 3가지 값을 insert 하기 !생략!
 		StringBuffer sb = new StringBuffer();	//String전용 컬렉션으로 담기(동기화) 
 		sb.append("INSERT INTO users(username, password, email) ");
@@ -50,9 +52,9 @@ public class UsersDao {
 		Connection conn = DBConn.getInstance();
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, user.getUsername());
-			pstmt.setString(2, user.getPassword());
-			pstmt.setString(3, user.getEmail());
+			pstmt.setString(1, joinDto.getUsername());
+			pstmt.setString(2, joinDto.getPassword());
+			pstmt.setString(3, joinDto.getEmail());
 			int result = pstmt.executeUpdate();	//변경된 행의 개수를 리턴 dml은 다 업데이트
 			
 			return result;
@@ -66,7 +68,7 @@ public class UsersDao {
 		return -1;
 	}
 	
-	public Users login(Users user) {
+	public Users login(LoginDto loginDto) {
 		StringBuffer sb = new StringBuffer();	//String전용 컬렉션으로 담기(동기화) 
 		String sql = ("SELECT id, username, email FROM users WHERE username = ? AND password = ? ");
 
@@ -74,8 +76,8 @@ public class UsersDao {
 		Connection conn = DBConn.getInstance();
 		try {
 			PreparedStatement pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, user.getUsername());
-			pstmt.setString(2, user.getPassword());
+			pstmt.setString(1, loginDto.getUsername());
+			pstmt.setString(2, loginDto.getPassword());
 			//int result = pstmt.executeUpdate();
 			
 			ResultSet rs = pstmt.executeQuery();
@@ -102,7 +104,11 @@ public class UsersDao {
 	
 	public int update(Users user) {
  
-		String sql = ("UPDATE users SET password = ? , email = ? where id = ?");
+		StringBuffer sb = new StringBuffer(); 
+		sb.append("UPDATE users SET password = ?, email = ? ");
+		sb.append("WHERE id = ?");
+		String sql = sb.toString();
+		//String sql = ("UPDATE users SET password = ? , email = ? where id = ?");
 
 		Connection conn = DBConn.getInstance();
 		try {
@@ -111,7 +117,7 @@ public class UsersDao {
 			pstmt.setString(2, user.getEmail());
 			pstmt.setInt(3, user.getId());
 			int result = pstmt.executeUpdate();
-			
+		
 			return result;
 
 		} catch (Exception e) {

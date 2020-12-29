@@ -1,6 +1,5 @@
 package com.cos.hello.model;
 
-import jdk.jfr.Name;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
